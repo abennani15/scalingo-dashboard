@@ -1,0 +1,68 @@
+{
+	"settings": {
+		"import/resolver": {
+			"typescript": {
+				"alwaysTryTypes": true,
+				"project": "./tsconfig.json"
+			}
+		}
+	},
+	"env": {
+		"jest": true
+	},
+	"parser": "@typescript-eslint/parser",
+	"extends": [
+		"next/core-web-vitals",
+		"plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/recommended",
+		"airbnb",
+		"airbnb/hooks",
+		"prettier"
+	],
+	"plugins": [
+		"prettier",
+		"@typescript-eslint"
+	],
+	"rules": {
+		"react/function-component-definition": "off",
+		"react/jsx-props-no-spreading": "off",
+		"react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
+		"no-tabs": "off",
+		"react/jsx-indent-props": "off",
+		"comma-dangle": ["error", "never"],
+		"eqeqeq": ["error", "smart"],
+		"function-paren-newline": "off",
+		"id-length": "off",
+		"max-len": "off",
+		"no-eq-null": "off",
+		"no-lonely-if": "warn",
+		"import/extensions": "off",
+		"import/no-named-default": "off",
+		"prettier/prettier": ["error"],
+		"@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }],
+		"no-unused-vars": "off",
+		"no-underscore-dangle": "off",
+		"class-methods-use-this": ["error", { "enforceForClassFields": false }],
+		"lines-between-class-members": "off",
+		"no-shadow": "off",
+		"@typescript-eslint/no-shadow": "error",
+		"jsx-a11y/label-has-associated-control": [ 2, {
+			"depth": 3
+		}],
+		"import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+		"jsx-a11y/click-events-have-key-events":  "off",
+		"jsx-a11y/no-noninteractive-element-interactions":  "off",
+		"no-redeclare": "off",
+		"no-nested-ternary": "off",
+    "@typescript-eslint/no-redeclare": "error",
+		"import/prefer-default-export": "off",
+		"react/require-default-props": [
+			"error", {
+				"functions":"defaultProps"
+			}
+		]
+	},
+	"globals": {
+		"JSX": "readonly"
+	}
+}
