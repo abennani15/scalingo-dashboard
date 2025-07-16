@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	ArrowLeft,
 	Play,
@@ -26,15 +27,18 @@ interface ApplicationDetailContentProps {
 	application: Application;
 	onAction: (formData: FormData) => Promise<void>;
 	logsComponent?: React.ReactNode;
+	deploymentsComponent?: React.ReactNode;
 }
 
 export default function ApplicationDetailContent({
 	application,
 	onAction,
-	logsComponent = null
+	logsComponent = null,
+	deploymentsComponent = null
 }: ApplicationDetailContentProps) {
 	const router = useRouter();
 	const [actionLoading, setActionLoading] = useState<string | null>(null);
+	const [activeTab, setActiveTab] = useState("logs");
 
 	const handleAction = async (action: string) => {
 		setActionLoading(action);
@@ -198,8 +202,19 @@ export default function ApplicationDetailContent({
 								</CardContent>
 							</Card>
 
-							{/* Logs Section */}
-							{logsComponent}
+							{/* Logs and Deployments Tabs */}
+							<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+								<TabsList className="grid w-full grid-cols-2">
+									<TabsTrigger value="logs">Logs</TabsTrigger>
+									<TabsTrigger value="deployments">Deployments</TabsTrigger>
+								</TabsList>
+								<TabsContent value="logs">{logsComponent}</TabsContent>
+								<TabsContent value="deployments">
+									{React.cloneElement(deploymentsComponent as React.ReactElement, {
+										shouldLoad: activeTab === "deployments"
+									})}
+								</TabsContent>
+							</Tabs>
 						</div>
 
 						{/* Actions Panel */}

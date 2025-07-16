@@ -5,6 +5,7 @@ import { fetchScalingoApplication, performScalingoApplicationAction } from "@/li
 import Loader from "@/components/ui/loader";
 import ApplicationDetailContent from "./application-detail-content";
 import ApplicationLogs from "./application-logs";
+import ApplicationDeployments from "./application-deployments";
 
 interface ApplicationDetailPageProps {
 	params: Promise<{ id: string }>;
@@ -54,6 +55,7 @@ export default async function ApplicationDetail({ params }: ApplicationDetailPag
 					<ApplicationLogs applicationId={id} logsCount={100} />
 				</Suspense>
 			}
+			deploymentsComponent={<ApplicationDeployments applicationId={id} />}
 		/>
 	);
 }

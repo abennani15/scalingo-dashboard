@@ -40,6 +40,35 @@ export interface LogEntry {
 	source: string;
 }
 
+// Deployment interfaces for type safety
+export interface Deployment {
+	app_id: string;
+	created_at: string;
+	git_ref: string;
+	status: "success" | "build-error" | "crashed" | "timeout" | "aborted";
+	id: string;
+	image_size: number;
+	stack_base_image: string;
+	pusher: {
+		email: string;
+		id: string;
+		username: string;
+	};
+}
+
+export interface DeploymentResponse {
+	deployments: Deployment[];
+	meta: {
+		pagination: {
+			current_page: number;
+			prev_page: number | null;
+			next_page: number | null;
+			total_pages: number;
+			total_count: number;
+		};
+	};
+}
+
 /**
  * Exchange API token for Bearer token
  * @returns Promise<string> Bearer token
@@ -301,5 +330,37 @@ export async function performScalingoApplicationAction(appId: string, action: st
 		return response.ok;
 	} catch {
 		return false;
+	}
+}
+
+/**
+ * Fetch deployments for a Scalingo application
+ * @param appId The application ID
+ * @param page The page number (optional, defaults to 1)
+ * @returns Promise<DeploymentResponse> Deployments response with pagination
+ */
+export async function fetchScalingoDeployments(appId: string, page: number = 1): Promise<DeploymentResponse> {
+	try {
+		const response = await scalingoApiRequest(`/v1/apps/${appId}/deployments?page=${page}`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch deployments: ${response.status}`);
+		}
+
+		const data: DeploymentResponse = await response.json();
+		return data;
+	} catch {
+		return {
+			deployments: [],
+			meta: {
+				pagination: {
+					current_page: 1,
+					prev_page: null,
+					next_page: null,
+					total_pages: 1,
+					total_count: 0
+				}
+			}
+		};
 	}
 }
