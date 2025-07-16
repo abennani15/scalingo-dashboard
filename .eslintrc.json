@@ -58,7 +58,7 @@
 		"import/prefer-default-export": "off",
 		"react/require-default-props": [
 			"error", {
-				"functions":"defaultProps"
+				"functions": "defaultArguments"
 			}
 		]
 	},

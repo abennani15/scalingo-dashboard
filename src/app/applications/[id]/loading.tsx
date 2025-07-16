@@ -2,5 +2,5 @@ import React from "react";
 import Loader from "@/components/ui/loader";
 
 export default function Loading() {
-	return <Loader text="Loading application..." centered />;
+	return <Loader text="Loading application details..." centered />;
 }
