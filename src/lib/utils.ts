@@ -69,6 +69,10 @@ export interface DeploymentResponse {
 	};
 }
 
+export interface DeploymentOutput {
+	output: string;
+}
+
 /**
  * Exchange API token for Bearer token
  * @returns Promise<string> Bearer token
@@ -362,5 +366,30 @@ export async function fetchScalingoDeployments(appId: string, page: number = 1):
 				}
 			}
 		};
+	}
+}
+
+/**
+ * Fetch deployment output for a specific deployment
+ * @param appId The application ID
+ * @param deploymentId The deployment ID
+ * @returns Promise<DeploymentOutput> Deployment output data
+ */
+export async function fetchScalingoDeploymentOutput(appId: string, deploymentId: string): Promise<DeploymentOutput> {
+	try {
+		const response = await scalingoApiRequest(`/v1/apps/${appId}/deployments/${deploymentId}/output`);
+
+		if (!response.ok) {
+			if (response.status === 404) {
+				throw new Error("Deployment not found or output not available");
+			}
+			throw new Error(`Failed to fetch deployment output: ${response.status}`);
+		}
+
+		// The response is plain text, not JSON
+		const output = await response.text();
+		return { output };
+	} catch (error) {
+		throw new Error(error instanceof Error ? error.message : "Failed to fetch deployment output");
 	}
 }

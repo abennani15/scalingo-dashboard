@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, GitBranch, User, HardDrive } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, GitBranch, User, HardDrive, Terminal } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
-import { type Deployment, type DeploymentResponse } from "@/lib/utils";
+import { type Deployment, type DeploymentResponse, type DeploymentOutput } from "@/lib/utils";
 import Loader from "@/components/ui/loader";
 import {
 	Pagination,
@@ -75,6 +76,42 @@ async function fetchDeployments(applicationId: string, page: number = 1): Promis
 	return response.json();
 }
 
+// Client-side API call to fetch deployment output
+async function fetchDeploymentOutput(applicationId: string, deploymentId: string): Promise<DeploymentOutput> {
+	// Get auth token from localStorage (same as auth provider)
+	const authToken = localStorage.getItem("auth-token");
+
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json"
+	};
+
+	// Add auth header if token exists
+	if (authToken) {
+		headers["x-auth-token"] = authToken;
+	}
+
+	const response = await fetch(`/api/scalingo/applications/${applicationId}/deployments/${deploymentId}/output`, {
+		method: "GET",
+		headers
+	});
+
+	if (!response.ok) {
+		if (response.status === 401) {
+			throw new Error("Authentication required. Please log in again.");
+		}
+		if (response.status === 404) {
+			throw new Error("Deployment not found or output not available.");
+		}
+		if (response.status === 400) {
+			const errorData = await response.json().catch(() => ({ error: "Bad request" }));
+			throw new Error(errorData.error || "Invalid request");
+		}
+		throw new Error("Failed to fetch deployment output");
+	}
+
+	return response.json();
+}
+
 export default function ApplicationDeployments({
 	applicationId,
 	shouldLoad = false,
@@ -84,6 +121,9 @@ export default function ApplicationDeployments({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [currentPage, setCurrentPage] = useState(page);
+	const [deploymentOutputs, setDeploymentOutputs] = useState<Record<string, string>>({});
+	const [loadingOutputs, setLoadingOutputs] = useState<Record<string, boolean>>({});
+	const [outputErrors, setOutputErrors] = useState<Record<string, string>>({});
 	const hasFetchedRef = useRef(false);
 
 	useEffect(() => {
@@ -121,6 +161,43 @@ export default function ApplicationDeployments({
 			.then(setDeployments)
 			.catch(() => setError("Failed to load deployments"))
 			.finally(() => setLoading(false));
+	};
+
+	// Handle loading deployment output
+	const handleLoadOutput = async (deploymentId: string) => {
+		// If output is already loaded, toggle visibility
+		if (deploymentOutputs[deploymentId]) {
+			setDeploymentOutputs((prev) => {
+				const newOutputs = { ...prev };
+				delete newOutputs[deploymentId];
+				return newOutputs;
+			});
+			return;
+		}
+
+		// Set loading state
+		setLoadingOutputs((prev) => ({ ...prev, [deploymentId]: true }));
+		setOutputErrors((prev) => {
+			const newErrors = { ...prev };
+			delete newErrors[deploymentId];
+			return newErrors;
+		});
+
+		try {
+			const output = await fetchDeploymentOutput(applicationId, deploymentId);
+			setDeploymentOutputs((prev) => ({ ...prev, [deploymentId]: output.output }));
+		} catch (outputError) {
+			setOutputErrors((prev) => ({
+				...prev,
+				[deploymentId]: outputError instanceof Error ? outputError.message : "Failed to load output"
+			}));
+		} finally {
+			setLoadingOutputs((prev) => {
+				const newLoading = { ...prev };
+				delete newLoading[deploymentId];
+				return newLoading;
+			});
+		}
 	};
 
 	if (!shouldLoad) {
@@ -205,6 +282,42 @@ export default function ApplicationDeployments({
 											<p className="text-gray-500">{deployment.stack_base_image}</p>
 										</div>
 									</div>
+
+									{/* Build Output Button */}
+									<div className="mt-4 flex justify-start">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => handleLoadOutput(deployment.id)}
+											disabled={loadingOutputs[deployment.id]}
+											className="flex items-center space-x-2"
+										>
+											<Terminal className="h-4 w-4" />
+											<span>
+												{loadingOutputs[deployment.id]
+													? "Loading..."
+													: deploymentOutputs[deployment.id]
+														? "Hide Build Output"
+														: "Show Build Output"}
+											</span>
+										</Button>
+									</div>
+
+									{/* Output Display */}
+									{outputErrors[deployment.id] && (
+										<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+											{outputErrors[deployment.id]}
+										</div>
+									)}
+
+									{deploymentOutputs[deployment.id] && (
+										<div className="mt-4">
+											<h4 className="text-sm font-medium mb-2">Build Output:</h4>
+											<pre className="bg-gray-900 text-green-400 p-4 rounded text-xs overflow-x-auto whitespace-pre-wrap max-h-96 overflow-y-auto">
+												{deploymentOutputs[deployment.id]}
+											</pre>
+										</div>
+									)}
 								</div>
 							))}
 
