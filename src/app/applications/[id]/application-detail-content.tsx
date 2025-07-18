@@ -28,13 +28,15 @@ interface ApplicationDetailContentProps {
 	onAction: (formData: FormData) => Promise<void>;
 	logsComponent?: React.ReactNode;
 	deploymentsComponent?: React.ReactNode;
+	domainsComponent?: React.ReactNode;
 }
 
 export default function ApplicationDetailContent({
 	application,
 	onAction,
 	logsComponent = null,
-	deploymentsComponent = null
+	deploymentsComponent = null,
+	domainsComponent = null
 }: ApplicationDetailContentProps) {
 	const router = useRouter();
 	const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -165,23 +167,8 @@ export default function ApplicationDetailContent({
 											</div>
 										)}
 									</div>
-									{application.url && (
-										<div>
-											<span className="text-sm font-medium text-gray-500">Application URL</span>
-											<div className="flex items-center mt-1">
-												<Globe className="h-4 w-4 mr-2 text-gray-400" />
-												<a
-													href={application.url}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
-												>
-													{application.url}
-													<ExternalLink className="h-3 w-3 ml-1" />
-												</a>
-											</div>
-										</div>
-									)}
+									{/* Custom Domains */}
+									{domainsComponent}
 									{application.git_url && (
 										<div>
 											<span className="text-sm font-medium text-gray-500">Git Repository</span>

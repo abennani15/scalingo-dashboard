@@ -6,6 +6,8 @@ import Loader from "@/components/ui/loader";
 import ApplicationDetailContent from "./application-detail-content";
 import ApplicationLogs from "./application-logs";
 import ApplicationDeployments from "./application-deployments";
+import ApplicationDomains from "./application-domains";
+import ApplicationDomainsSkeleton from "./application-domains-skeleton";
 
 interface ApplicationDetailPageProps {
 	params: Promise<{ id: string }>;
@@ -56,6 +58,11 @@ export default async function ApplicationDetail({ params }: ApplicationDetailPag
 				</Suspense>
 			}
 			deploymentsComponent={<ApplicationDeployments applicationId={id} />}
+			domainsComponent={
+				<Suspense fallback={<ApplicationDomainsSkeleton />}>
+					<ApplicationDomains applicationId={id} />
+				</Suspense>
+			}
 		/>
 	);
 }

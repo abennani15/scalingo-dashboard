@@ -73,6 +73,23 @@ export interface DeploymentOutput {
 	output: string;
 }
 
+export interface Domain {
+	id: string;
+	name: string;
+	ssl: boolean;
+	canonical: boolean;
+	letsencrypt_enabled: boolean;
+	letsencrypt: boolean;
+	letsencrypt_status: string;
+	tlscert?: string;
+	tlskey?: string;
+	validity?: string;
+}
+
+export interface DomainsResponse {
+	domains: Domain[];
+}
+
 /**
  * Exchange API token for Bearer token
  * @returns Promise<string> Bearer token
@@ -391,5 +408,27 @@ export async function fetchScalingoDeploymentOutput(appId: string, deploymentId:
 		return { output };
 	} catch (error) {
 		throw new Error(error instanceof Error ? error.message : "Failed to fetch deployment output");
+	}
+}
+
+/**
+ * Fetch domains for a Scalingo application
+ * @param appId The application ID
+ * @returns Promise<DomainsResponse> Domains response
+ */
+export async function fetchScalingoDomains(appId: string): Promise<DomainsResponse> {
+	try {
+		const response = await scalingoApiRequest(`/v1/apps/${appId}/domains`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch domains: ${response.status}`);
+		}
+
+		const data: DomainsResponse = await response.json();
+		return data;
+	} catch {
+		return {
+			domains: []
+		};
 	}
 }
